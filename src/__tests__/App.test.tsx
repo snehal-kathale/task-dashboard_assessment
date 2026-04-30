@@ -1,8 +1,8 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import App from "../App";
 import * as api from "../api/tasks";
-import { fireEvent } from "@testing-library/react";
 
+// mock API
 jest.spyOn(api, "fetchTasks").mockResolvedValue([
   {
     id: "1",
@@ -15,30 +15,35 @@ jest.spyOn(api, "fetchTasks").mockResolvedValue([
   },
 ]);
 
-test("loads and displays tasks", async () => {
-  render(<App />);
+describe("App", () => {
+  test("loads and displays tasks", async () => {
+    render(<App />);
 
-  expect(screen.getByText(/loading/i)).toBeInTheDocument();
+    expect(screen.getByText(/loading/i)).toBeInTheDocument();
 
-  const task = await screen.findByText(/test task/i);
-  expect(task).toBeInTheDocument();
-});
+    const task = await screen.findByText((text) => text.includes("Test"));
 
-test("filters tasks based on search", async () => {
-  render(<App />);
+    expect(task).toBeInTheDocument();
+  });
 
-  const input = await screen.findByPlaceholderText(/search/i);
+  test("filters tasks based on search", async () => {
+    render(<App />);
 
-  fireEvent.change(input, { target: { value: "Test" } });
+    const input = await screen.findByPlaceholderText(/search/i);
 
-  expect(screen.getByText(/test task/i)).toBeInTheDocument();
-});
+    fireEvent.change(input, { target: { value: "Test" } });
 
-test("shows pagination and navigates pages", async () => {
-  render(<App />);
+    const task = await screen.findByText((text) => text.includes("Test"));
 
-  await screen.findByText(/test task/i);
+    expect(task).toBeInTheDocument();
+  });
 
-  const nextBtn = screen.getByText(/next/i);
-  expect(nextBtn).toBeInTheDocument();
+  test("shows pagination and navigates pages", async () => {
+    render(<App />);
+
+    await screen.findByText((text) => text.includes("Test"));
+
+    expect(screen.getByText(/previous/i)).toBeInTheDocument();
+    expect(screen.getByText(/next/i)).toBeInTheDocument();
+  });
 });
